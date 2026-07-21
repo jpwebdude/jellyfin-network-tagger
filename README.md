@@ -76,11 +76,47 @@ cd jellyfin-network-tagger
 docker compose up --build jellyfin-network-tagger
 ```
 
-#### OPTION B — Pull pre‑built image
+#### Option B — Pull pre‑built image (recommended)
 
+You can run the tagger using the pre‑built Docker Hub image, but you **must** create a `.env` file first!
+
+
+Without the required environment variables, the container cannot connect to Jellyfin or TMDB.
+
+1. Create `.env`:
+
+```env
+JELLYFIN_URL=http://192.168.x.x:8096
+JELLYFIN_API_KEY=your-jellyfin-api-key
+TMDB_API_KEY=eyJ...your-tmdb-read-access-token
+TMDB_COUNTRY=US
+RUN_INTERVAL_HOURS=24
+DRY_RUN=true
+IGNORE_PROVIDERS=Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo
 ```
+
+2. Pull the image:
+
+```bash
 docker pull jhosted/jellyfin-network-tagger:latest
-docker compose up -d jellyfin-network-tagger
+```
+
+3. Run with Docker Compose:
+
+```yaml
+services:
+  jellyfin-network-tagger:
+    image: jhosted/jellyfin-network-tagger:latest
+    container_name: jellyfin-network-tagger
+    restart: unless-stopped
+    env_file:
+      - ./jellyfin-network-tagger/.env
+    networks:
+      - media-stack_default
+
+networks:
+  media-stack_default:
+    external: true
 ```
 
 ### 🧩 Docker Compose Examples
@@ -159,12 +195,11 @@ TMDB_COUNTRY=US
 RUN_INTERVAL_HOURS=24
 DRY_RUN=true
 IGNORE_PROVIDERS=Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo
-
 ```
 
-✔ Use your host’s LAN IP for Jellyfin
-✔ Use the long TMDB Read Access Token (`eyJ...`)
-✔ Start with `DRY_RUN=true` to preview changes safely
+> ✔ Use your host’s LAN IP for Jellyfin
+> ✔ Use the long TMDB Read Access Token (`eyJ...`)
+> ✔ Start with `DRY_RUN=true` to preview changes safely
 
 
 
@@ -175,13 +210,13 @@ docker network ls
 # Look for a name ending in _default — usually yourfoldername_default
 ```
 
-#### 🧪 First Run (Dry Run)
+#### First Run (Dry Run)
 
 ```bash
 docker compose up jellyfin-network-tagger
 ```
 
-**Watch the logs:**
+#### **Watch the logs:**
 
 ```bash
 docker logs -f jellyfin-network-tagger
