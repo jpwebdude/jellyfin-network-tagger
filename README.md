@@ -80,7 +80,6 @@ docker compose up --build jellyfin-network-tagger
 
 You can run the tagger using the pre‑built Docker Hub image, but you **must** create a `.env` file first!
 
-
 Without the required environment variables, the container cannot connect to Jellyfin or TMDB.
 
 1. Create `.env`:
@@ -200,8 +199,6 @@ IGNORE_PROVIDERS=Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo
 > ✔ Use your host’s LAN IP for Jellyfin
 > ✔ Use the long TMDB Read Access Token (`eyJ...`)
 > ✔ Start with `DRY_RUN=true` to preview changes safely
-
-
 
 **Find your Docker network name:**
 
