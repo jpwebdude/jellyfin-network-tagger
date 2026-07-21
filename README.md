@@ -64,8 +64,6 @@ Before deploying, make sure you have the following:
 
 > ⚠️ **Important:** The TMDB Read Access Token (starts with `eyJ`) is required — *not* the short API key. Using the wrong one will cause all TMDB lookups to fail.
 
-
-
 ---
 
 ## 🧱 Installation
@@ -83,62 +81,139 @@ docker compose up --build jellyfin-network-tagger
 ```
 docker pull jhosted/jellyfin-network-tagger:latest
 docker compose up -d jellyfin-network-tagger
-
-
 ```
 
-#### Example docker-compose.yml with your existing Jellyfin Stack
+### 🧩 Docker Compose Examples
+
+##### **Scenario 1 — Jellyfin running in** `network_mode: host`  **(MOST COMMON)**
+
+If your Jellyfin container uses:
+
+```yaml
+network_mode: host
+```
+
+then **do NOT** try to place the tagger on the same network — host‑mode containers cannot join Docker networks.
+
+Instead, simply point the tagger to your host’s LAN IP:
 
 ```yaml
 services:
-  # ... your existing services (jellyfin, radarr, etc.)
-
   jellyfin-network-tagger:
-    build:
-      context: ./jellyfin-network-tagger
-      dockerfile: Dockerfile
+    image: jhosted/jellyfin-network-tagger:latest
+    container_name: jellyfin-network-tagger
+    restart: unless-stopped
+    env_file:
+      - ./jellyfin-network-tagger/.env
+
+    # Jellyfin is running in host mode, so the tagger reaches it via LAN IP:
+    # JELLYFIN_URL=http://192.168.x.x:8096
+
+    networks:
+      - media-stack_default   # Optional: only if your other apps use this network
+
+networks:
+  media-stack_default:
+    external: true
+```
+
+```markdown
+> ⚠️ **If your Jellyfin container uses `network_mode: host`, do NOT try to place the tagger on the same network.**
+>
+> Docker containers cannot join a host‑mode network.  
+> Instead, set `JELLYFIN_URL` to your host machine’s LAN IP (e.g., `http://192.168.1.100:8096`).  
+> The tagger will reach Jellyfin normally through the LAN.
+```
+
+---
+
+#### Scenario 2 — Jellyfin running on a normal Docker network
+
+If Jellyfin is on a bridge network (e.g., `media-stack_default`), then place the tagger on the same network:
+
+```yaml
+services:
+  jellyfin-network-tagger:
+    image: jhosted/jellyfin-network-tagger:latest
     container_name: jellyfin-network-tagger
     restart: unless-stopped
     env_file:
       - ./jellyfin-network-tagger/.env
     networks:
-      - media-stack_default   # Must match your existing Docker network name - find yours with command docker network ls
+      - media-stack_default
 
-networks:                     # This block must be at ROOT level (zero indentation).
-  media-stack_default:        # It tells Compose that this network already exists.
+networks:
+  media-stack_default:
     external: true
 ```
 
-> ⚠️ The `networks:` declaration must be at **root level** (zero indentation) 
+## 🧾 Environment Variables (`.env`)
 
-**4. Find your Docker network name**
+Your `.env` file should look like:
+
+```yaml
+JELLYFIN_URL=http://192.168.1.100:8096
+JELLYFIN_API_KEY=your-jellyfin-api-key-here
+TMDB_API_KEY=eyJ...your-tmdb-read-access-token-here
+TMDB_COUNTRY=US
+RUN_INTERVAL_HOURS=24
+DRY_RUN=true
+IGNORE_PROVIDERS=Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo
+
+```
+
+✔ Use your host’s LAN IP for Jellyfin
+✔ Use the long TMDB Read Access Token (`eyJ...`)
+✔ Start with `DRY_RUN=true` to preview changes safely
+
+
+
+**Find your Docker network name:**
 
 ```bash
 docker network ls
 # Look for a name ending in _default — usually yourfoldername_default
 ```
 
-**5. Start with a Dry Run**
+#### 🧪 First Run (Dry Run)
 
 ```bash
-docker compose up  jellyfin-network-tagger
+docker compose up jellyfin-network-tagger
 ```
 
-<mark>Watch the logs. With `DRY_RUN=true` (the default), the tagger will log everything it *would* tag without writing anything to Jellyfin. Verify the results look right.</mark>
-
-**6. Go live**
-
-Edit `.env` and set `DRY_RUN=false`, then do a clean rebuild:
+**Watch the logs:**
 
 ```bash
-docker compose down  jellyfin-network-tagger
-docker rmi  jellyfin-network-tagger
-docker compose up -d --build jellyfin-network-tagger
+docker logs -f jellyfin-network-tagger
+```
+
+You should see:
+
++ number of movies scanned
+
++ TMDB lookups
+
++ provider normalization
+
++ run summary
+
+No tags will be written while `DRY_RUN=true`.
+
+### 🚀 Go Live
+
+Edit `.env`:
+
+```yaml
+DRY_RUN=false
+```
+
+Then restart:
+
+```bash
+docker compose restart jellyfin-network-tagger
 ```
 
 ---
-
-
 
 ## ⚙️ Configuration
 
@@ -248,13 +323,15 @@ Run complete: 42 tagged | 310 unchanged | 12 no-id | 3 no-tmdb | 8 no-providers 
 
 ## 🛠 Troubleshooting
 
-+ **TMDB lookups failing** → ensure you’re using the long Read Access Token (`eyJ...`)
++ **Jellyfin unreachable** → Jellyfin is in `network_mode: host`, use LAN IP
 
-+ **No items processed** → use your host LAN IP for `JELLYFIN_URL`, not `localhost`
++ **TMDB lookups failing** → using short API key instead of long token
 
-+ **Code changes not applying** → run a clean rebuild (`docker rmi jellyfin-network-tagger`)
++ **No tags written** → DRY_RUN=true
 
-+ **Network errors** → ensure your `networks:` block is at root level in Compose
++ **Network errors** → ensure `networks:` block is at root level
+
++ **Code changes not applying** → run a clean rebuild:
 
 ```bash
 docker compose down jellyfin-network-tagger
@@ -265,27 +342,6 @@ docker compose up -d --build jellyfin-network-tagger
 + **`invalid compose project` or network error** → The `networks:` block is nested under the service instead of at root level. Move it to zero indentation at the bottom of your `docker-compose.yml`.
 
 + **Provider names appearing unclean** → Add the raw name to `PROVIDER_NAME_MAP` in `tagger.py` mapping it to your preferred clean name, then rebuild.
-
----
-
-## Updating
-
-When a new version is released:
-
-```bash
-# 1. Pull the latest code
-git pull
-
-# 2. Force a clean rebuild
-docker compose down jellyfin-network-tagger
-docker rmi jellyfin-network-tagger
-docker compose up -d --build jellyfin-network-tagger
-
-# 3. Verify the new version is running
-docker logs jellyfin-network-tagger | head -5
-```
-
-> The `--build` flag alone isn't always enough if Docker has cached layers. Always remove the old image with `docker rmi` first to guarantee the new code is running.
 
 ---
 
@@ -310,8 +366,6 @@ Streaming provider data is sourced from [The Movie Database (TMDB)](https://www.
 ## 🤝 Contributing
 
 We welcome contributions, bug fixes, and feature requests! Because this plugin is built for the Jellyfin ecosystem, all contributions must adhere to open-source compliance.
-
-
 
 ## ⚖️ License & Anti-Commercial Policy
 
