@@ -1,0 +1,49 @@
+# ─── Jellyfin Network Tagger — Docker Compose Example ───────────────────────
+#
+# This file shows ONLY the jellyfin-network-tagger service block.
+# Add it to your existing docker-compose.yml alongside your other services.
+#
+# Prerequisites:
+#   1. Copy .env.example to .env and fill in your values
+#   2. Make sure the network name below matches your existing Docker network
+#      (run `docker network ls` to find it — usually ends in _default)
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+  jellyfin: # Your existing jellyfin service
+    image:  # jellyfin image and the rest of the compose block for it
+  
+
+
+# OPTION A — Build from source (recommended for first-time setup)
+  
+  jellyfin-network-tagger:
+    build:
+      context: ./jellyfin-network-tagger
+      dockerfile: Dockerfile
+    container_name: jellyfin-network-tagger
+    restart: unless-stopped
+    env_file:
+      - ./jellyfin-network-tagger/.env
+    networks:
+      - media-stack_default   # Must match your existing Docker network name - find yours with command docker network ls
+    
+networks:                     # This block must be at ROOT level (zero indentation).
+  media-stack_default:        # It tells Compose that this network already exists — don't try to create it.
+    external: true
+
+
+# OPTION B — Use this if you pull a pre-built image from Docker Hub
+    # image: jhosted/jellyfin-network-tagger:latest
+    
+  jellyfin-network-tagger:
+    image: jhosted/jellyfin-network-tagger:latest
+    container_name: jellyfin-network-tagger
+    restart: unless-stopped
+    env_file:
+      - ./jellyfin-network-tagger/.env
+    networks:
+      - media-stack_default   # Must match your existing Docker network name - find yours with command docker network ls
+                              
+networks:                    # This block must be at ROOT level (zero indentation).
+  media-stack_default:       # It tells Compose that this network already exists — don't try to create it.
+    external: true
