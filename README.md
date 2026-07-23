@@ -21,7 +21,7 @@
   <a href="https://hub.docker.com/r/jhosted/jellyfin-network-tagger">
     <img src="https://img.shields.io/badge/Docker%20Hub-View%20Image-blue?logo=docker" />
   </a>
-  <a href="https://ghcr.io/jpwebdude/jellyfin-network-tagger">
+  <a href="https://github.com/jpwebdude/jellyfin-network-tagger/pkgs/container/jellyfin-network-tagger/1051819480?tag=latest">
     <img src="https://img.shields.io/badge/GHCR-View%20Package-black?logo=github" />
   </a>
   <a href="https://github.com/jpwebdude/jellyfin-network-tagger/issues">
