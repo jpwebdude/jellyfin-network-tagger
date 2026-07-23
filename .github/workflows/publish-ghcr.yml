@@ -3,7 +3,7 @@ name: Publish Multi-Arch Docker Image to GHCR
 on:
   push:
     tags:
-      - 'v*'   # Runs when you push a version tag like v1.0.1
+      - 'v*'   # Runs when you push a version tag like v1.0.4
 
 jobs:
   build-and-push:
@@ -43,4 +43,3 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
-
