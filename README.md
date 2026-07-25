@@ -453,6 +453,20 @@ docker compose up -d --build jellyfin-network-tagger
 
 ---
 
+## 🏗️ Multi‑Architecture Support
+
+This project provides **full multi‑architecture Docker images**, allowing the container to run on a wide range of systems including x86 servers, ARM SBCs, NAS devices, and cloud environments.
+
+The published Docker images include the following architectures:
+
++ **amd64** — Standard 64‑bit PCs, servers, VPS hosts
+
++ **arm64** — Raspberry Pi 4/5, ARM servers, modern SBCs
+
++ **armv7** — Raspberry Pi 2/3, older ARM boards
+
+All images are built using Docker Buildx with QEMU emulation to ensure consistent builds across platforms.
+
 ## Recommended Jellyfin Plugins
 
 The tagger works great alongside these Jellyfin plugins:

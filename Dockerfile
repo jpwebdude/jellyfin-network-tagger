@@ -6,7 +6,7 @@
 # Pull:   docker pull jhosted/jellyfin-network-tagger:latest
 # ─────────────────────────────────────────────────────────────────────────────
 
-FROM python:3.14-slim
+FROM python:3.10-slim-bullseye
 
 # OCI Metadata
 LABEL org.opencontainers.image.source="https://github.com/jpwebdude/jellyfin-network-tagger"
