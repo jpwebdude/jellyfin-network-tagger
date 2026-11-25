@@ -68,7 +68,7 @@ These network tags work seamlessly with plugins like **Auto Collections** ([gith
 
 ---
 
-## 📸 Screenshots
+## 📸 Network Row Screenshots
 
 <p align="center">
   <a href="docs/images/jellyfin-desktop-network-rows.jpg">
@@ -79,16 +79,29 @@ These network tags work seamlessly with plugins like **Auto Collections** ([gith
   </a>
 </p>
 
-## 🎥 Video Preview
 
-(Click image below to view original showcase video)
+## 🎥 Dashboard Preview - http://server-ip:3000
+
+
 
 <p align="center">
-  <a href="https://youtu.be/u2z-TYNpBhs?si=D5jFXIbt20CBf0gM">
-    <img src="docs/images/jellyfin-network-tagger-video-preview.jpg" width="85%" style="border-radius:8px;" />
+ <a href="docs/images/dashboard1.png">
+    <img src="docs/images/dashboard1.png" width="75%" style="border-radius:8px;" />
+  </a>
   </a>
 </p>
-
+<p align="center">
+ <a href="docs/images/dashboard2.png">
+    <img src="docs/images/dashboard2.png" width="75%" style="border-radius:8px;" />
+  </a>
+  </a>
+</p>
+<p align="center">
+ <a href="docs/images/dashboard3.png">
+    <img src="docs/images/dashboard3.png" width="75%" style="border-radius:8px;" />
+  </a>
+  </a>
+</p>
 ---
 
 ## 📋 Prerequisites
@@ -191,7 +204,7 @@ You will see the dashboard with the left sidebar navigation:
 - **Jellyfin Network Tagger** (`/`)
 - **Local Library Tagger** (`/local-tagger`)
 - **Settings** (`/settings`)
-- **Buy Me a Coffee** (support link at the bottom of the sidebar)
+- **Buy Me a Coffee** (Optional, I love coffee and donation's support continued development of the project)
 
 ---
 
