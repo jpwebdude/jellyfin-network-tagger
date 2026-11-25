@@ -3,7 +3,8 @@ name: Publish Multi-Arch Docker Image to GHCR
 on:
   push:
     tags:
-      - 'v*'   # Runs when you push a version tag like v1.0.4
+      - 'v*'   # Runs when you push a version tag like v2.0.0
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -32,7 +33,12 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=edge" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build and push multi-arch images
         uses: docker/build-push-action@v6
@@ -40,6 +46,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}

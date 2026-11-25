@@ -9,495 +9,340 @@
 <h1 align="center">Jellyfin Network Tagger</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/docker/pulls/jhosted/jellyfin-network-tagger?logo=docker&label=Docker%20Pulls" />
-  <img src="https://img.shields.io/docker/v/jhosted/jellyfin-network-tagger/latest?logo=docker&label=Docker%20Version" />
-  <img src="https://img.shields.io/badge/GHCR-ghcr.io%2Fjpwebdude%2Fjellyfin--network--tagger-blue?logo=github" />
-  <img src="https://img.shields.io/github/license/jpwebdude/jellyfin-network-tagger?label=License" />
-  <img src="https://img.shields.io/badge/Python-3.14-blue?logo=python" />
-  <img src="https://img.shields.io/github/stars/jpwebdude/jellyfin-network-tagger?logo=github&label=Stars" />
+  <img src="https://img.shields.io/docker/pulls/jhosted/jellyfin-network-tagger?logo=docker&label=Docker%20Pulls" alt="Docker Pulls" />
+  <img src="https://img.shields.io/docker/v/jhosted/jellyfin-network-tagger/latest?logo=docker&label=Docker%20Version" alt="Docker Version" />
+  <img src="https://img.shields.io/github/actions/workflow/status/jpwebdude/jellyfin-network-tagger/publish-ghcr.yml?logo=githubactions&logoColor=white&label=GHCR%20Build" alt="GHCR Build" />
+  <img src="https://img.shields.io/github/license/jpwebdude/jellyfin-network-tagger?label=License" alt="License" />
+  <img src="https://img.shields.io/github/stars/jpwebdude/jellyfin-network-tagger?logo=github&label=Stars" alt="GitHub Stars" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white" alt="Node.js 22" />
+  <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5.7" />
+  <img src="https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white" alt="Express 4" />
+  <img src="https://img.shields.io/badge/Docker-amd64%20%7C%20arm64%20%7C%20armv7-2496ED?logo=docker&logoColor=white" alt="Docker Multi-Arch" />
+  <img src="https://img.shields.io/badge/Jellyfin-v10.8%20--%20v12.4%2B-00A4DC?logo=jellyfin&logoColor=white" alt="Jellyfin v10.8 - v12.4+" />
+  <img src="https://img.shields.io/badge/TMDB-API%20v3%20%2F%20Token-01B4E4?logo=themoviedatabase&logoColor=white" alt="TMDB API" />
+  <img src="https://img.shields.io/badge/Web%20Dashboard-Port%203000-0EA5E9" alt="Web Dashboard Port 3000" />
 </p>
 
 <p align="center">
   <a href="https://hub.docker.com/r/jhosted/jellyfin-network-tagger">
-    <img src="https://img.shields.io/badge/Docker%20Hub-View%20Image-blue?logo=docker" />
+    <img src="https://img.shields.io/badge/Docker%20Hub-View%20Image-blue?logo=docker" alt="Docker Hub" />
   </a>
-  <a href="https://github.com/jpwebdude/jellyfin-network-tagger/pkgs/container/jellyfin-network-tagger/1051819480?tag=latest">
-    <img src="https://img.shields.io/badge/GHCR-View%20Package-black?logo=github" />
+  <a href="https://github.com/jpwebdude/jellyfin-network-tagger/pkgs/container/jellyfin-network-tagger">
+    <img src="https://img.shields.io/badge/GHCR-View%20Package-black?logo=github" alt="GHCR Package" />
   </a>
   <a href="https://github.com/jpwebdude/jellyfin-network-tagger/issues">
-    <img src="https://img.shields.io/badge/Issues-Report%20a%20Bug-red?logo=github" />
+    <img src="https://img.shields.io/badge/Issues-Report%20a%20Bug-red?logo=github" alt="Report a Bug" />
   </a>
   <a href="https://buymeacoffee.com/jpwebdude">
-    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20the%20Project-ffdd00?logo=buymeacoffee" />
+    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20the%20Project-ffdd00?logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee" />
   </a>
 </p>
 
-A lightweight Python + Docker service that scans your [Jellyfin](https://jellyfin.org/) library, looks up each item on [TMDB](https://www.themoviedb.org/), and automatically adds clean, normalized streaming provider tags — Netflix, Max, Disney+, Prime Video, Apple TV+, Paramount+, Discovery+ and more.
+A self-hosted **Web Dashboard** and Docker service for [Jellyfin](https://jellyfin.org/) (supporting **v10.8 through v12.4+**) that runs entirely in your browser on port `3000`. It combines two integrated tools in one interface:
 
-These tags can then be used by plugins like **Auto Collections** [(github.com)](https://github.com/KeksBombe/jellyfin-plugin-auto-collections") or **SmartLists** [(github.com)](https://github.com/jyourstone/jellyfin-smartlists-plugin") to automatically build per‑network collections, and surfaced beautifully on your Jellyfin homepage with the **KefinTweaks** plugin [(github.com)](https://github.com/ranaldsgift/KefinTweaks").
+1. **Jellyfin Network Tagger** — Scans your Jellyfin Movies and TV Series, queries [TMDB](https://www.themoviedb.org/) streaming availability, and writes clean, normalized network tags (`Netflix`, `Max`, `Disney+`, `Prime Video`, `Apple TV+`, `Paramount+`, `Discovery+`, and more) directly into Jellyfin metadata.
+2. **Local Library Tagger** — Scans local Movie and TV Show folders, matches titles on TMDB, and appends Jellyfin-standard `[tmdbid-12345]` tags to TV show folders and video files (right before `.mp4`, `.mkv`, etc.) with Dry Run safety previews.
 
-</div>
+These network tags work seamlessly with plugins like **Auto Collections** ([github.com](https://github.com/KeksBombe/jellyfin-plugin-auto-collections)) or **SmartLists** ([github.com](https://github.com/jyourstone/jellyfin-smartlists-plugin)) to build per-network collections automatically, and can be featured on your Jellyfin home screen with **KefinTweaks** ([github.com](https://github.com/ranaldsgift/KefinTweaks)).
 
 ---
 
 ## ✨ Features
 
-+ Automatically tags Jellyfin items with streaming provider names
-
-+ Non‑destructive updates — adds tags without overwriting existing metadata
-
-+ Scheduled runs — configurable interval (default: every 24h)
-
-+ GHCR + Docker Hub images
-
-+ Detailed logging — dry‑run mode for safe testing
-
-+ Integrates seamlessly with Jellyfin Auto Collections and SmartLists
+- **100% Web Dashboard Interface** — Manage credentials, test connections, trigger dry runs or live scans, and inspect logs directly in your browser on port `3000`. No terminal commands or `.env` editing required after container startup.
+- **Jellyfin Server v12.4+ Compatible** — Uses full `BaseItemDto` read-modify-write updates, non-null collection preservation, paginated library endpoints, and an in-dashboard **Test Jellyfin Connection** check against `/System/Info`.
+- **Non-Destructive Metadata Updates** — Appends streaming provider tags without overwriting your existing custom Jellyfin tags, genres, studios, or lock settings.
+- **Local Library Tagger (`[tmdbid-ID]`)** — Supports three workflows for tagging local storage:
+  - **Server / Mounted Paths**: Scan and rename directly on Docker-mounted folders (`/media/movies`, `/media/tv`) with an interactive server directory browser.
+  - **Browser Folder Picker**: Pick local folders straight from Chromium-based browsers without mounting extra Docker volumes.
+  - **Downloadable Batch Scripts**: Export verified `.sh` (Linux/macOS) or `.ps1` (Windows PowerShell) rename scripts after reviewing matches.
+- **Dry Run Safety First** — Both taggers default to **Dry Run** so you can verify matches, fix any uncertain TMDB matches manually in the UI, and confirm zero errors before writing to Jellyfin or renaming files on disk.
+- **Flexible TMDB Authentication** — Accepts either a TMDB **Read Access Token** (`eyJ...`) or a **v3 API Key** in Settings, verified via a built-in **Test TMDB Connection** button.
+- **Persistent Settings Volume** — Settings and saved local library paths persist across container restarts and image updates in `/app/data/config.json`.
+- **Provider Name Normalization & Tester** — Automatically collapses verbose TMDB provider names (e.g., `Netflix Standard with Ads` → `Netflix`, `HBO Max Amazon Channel` → `Max`) and lets you test raw names right from the dashboard.
+- **Scheduled Background Scans** — Configurable automatic scan interval (default: every `24` hours).
+- **Multi-Architecture Docker Images** — Published to GHCR and Docker Hub for `linux/amd64`, `linux/arm64`, and `linux/arm/v7`.
 
 ---
 
 ## 📸 Screenshots
 
 <p align="center">
-<a href="docs/images/jellyfin-desktop-network-rows.jpg">
-<img src="docs/images/jellyfin-desktop-network-rows.jpg" width="65%" style="border-radius:8px;" />
-</a>
-<a href="docs/images/jellyfin-mobile-network-rows.jpg">
-<img src="docs/images/jellyfin-mobile-network-rows.jpg" width="25%" style="border-radius:8px;" />
-</a>
+  <a href="docs/images/jellyfin-desktop-network-rows.jpg">
+    <img src="docs/images/jellyfin-desktop-network-rows.jpg" width="65%" style="border-radius:8px;" />
+  </a>
+  <a href="docs/images/jellyfin-mobile-network-rows.jpg">
+    <img src="docs/images/jellyfin-mobile-network-rows.jpg" width="25%" style="border-radius:8px;" />
+  </a>
 </p>
 
 ## 🎥 Video Preview
 
-(Click image below to view video)
+(Click image below to view original showcase video)
 
 <p align="center">
-<a href="https://youtu.be/u2z-TYNpBhs?si=D5jFXIbt20CBf0gM">
-<img src="docs/images/jellyfin-network-tagger-video-preview.jpg" width="85%" style="border-radius:8px;" />
-</a>
+  <a href="https://youtu.be/u2z-TYNpBhs?si=D5jFXIbt20CBf0gM">
+    <img src="docs/images/jellyfin-network-tagger-video-preview.jpg" width="85%" style="border-radius:8px;" />
+  </a>
 </p>
-
-## Prerequisites
-
-Before deploying, make sure you have the following:
-
-| Requirement                | Notes                                                                                                           |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Docker**                 | Docker Engine or Docker Desktop with Compose v2                                                                 |
-| **Jellyfin Server**        | Versions 10.8+ to 10.11.11 running as a Docker container. Jellyfin Server v12 is not supported as of this time. |
-| **Jellyfin API Key**       | Dashboard → API Keys → **+** (name it `tagger`)                                                                 |
-| **TMDB Account**           | Free account at [themoviedb.org](https://www.themoviedb.org/)                                                   |
-| **TMDB Read Access Token** | Settings → API → **Read Access Token** (the long `eyJ...` token)                                                |
-| **IMDB Metadata**          | Your Jellyfin items must have IMDB IDs in their ProviderIds                                                     |
-
-> ⚠️ **Important:** The TMDB Read Access Token (starts with `eyJ`) is required — *not* the short API key. Using the wrong one will cause all TMDB lookups to fail.
 
 ---
 
-## 🧱 Installation
+## 📋 Prerequisites
 
-### Option A — Build Locally
+Before deploying, make sure you have:
 
-Recommended if you want to customize or modify the network names in the (PROVIDER_NAME_MAP)  dictionary located in tagger.py 
+| Requirement | Notes |
+| --- | --- |
+| **Docker** | Docker Engine or Docker Desktop with Compose v2 |
+| **Jellyfin Server** | **v10.8 through v12.4+** (Docker or bare-metal) |
+| **Jellyfin API Key** | In Jellyfin: **Dashboard → API Keys → `+`** (name it `Jellyfin Network Tagger`) |
+| **TMDB Account** | Free account at [themoviedb.org](https://www.themoviedb.org/) |
+| **TMDB Token or Key** | In TMDB: **Settings → API** — either your **API Read Access Token** (`eyJ...`) or **API Key (v3 auth)** |
+| **IMDB / TMDB Metadata** | For **Jellyfin Network Tagger**, items in Jellyfin should have IMDB or TMDB ProviderIds populated |
+
+---
+
+## 🚀 Step-by-Step Setup Guide
+
+### Step 1 — Create Your `docker-compose.yml`
+
+Create a folder on your server (for example, `jellyfin-network-tagger`) and create a `docker-compose.yml` file inside it.
+
+#### Option A — Pre-built Image from GHCR (Recommended)
+
+```yaml
+services:
+  jellyfin-network-tagger:
+    image: ghcr.io/jpwebdude/jellyfin-network-tagger:latest
+    container_name: jellyfin-network-tagger
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "3000:3000"
+    volumes:
+      # Required: persists all dashboard Settings across container restarts & updates
+      - ./config:/app/data
+
+      # Optional: mount your local media folders if using Server Paths in Local Library Tagger
+      # - /path/to/your/movies:/media/movies
+      # - /path/to/your/tv:/media/tv
+    networks:
+      - media-stack_default
+
+networks:
+  media-stack_default:
+    external: true
+```
+
+#### Option B — Pre-built Image from Docker Hub
+
+Replace the `image:` line above with:
+
+```yaml
+    image: jhosted/jellyfin-network-tagger:latest
+```
+
+#### Option C — Build Locally from Source
 
 ```bash
 git clone https://github.com/jpwebdude/jellyfin-network-tagger.git
 cd jellyfin-network-tagger
+cp docker-compose.example.yml docker-compose.yml
 ```
 
-Create your `.env` file first using the example found down further on this page:
+Edit `docker-compose.yml` to comment out `image:` and uncomment `build: .`.
 
-Then build your image:
+> **Networking Tip (`network_mode: host`):**
+> - If your Jellyfin container uses `network_mode: host`, Docker containers on a bridge network cannot join `host` mode. Remove or omit the `networks:` block in your `docker-compose.yml` if you don't use a custom bridge network, and enter your host machine's **LAN IP** (e.g., `http://192.168.1.100:8096`) in Settings instead of `localhost`.
+> - If Jellyfin shares the same Docker bridge network (e.g., `media-stack_default`), verify the network name with `docker network ls` and you can use either your LAN IP or `http://jellyfin:8096`.
+
+---
+
+### Step 2 — Start the Container
+
+Make sure your local `./config` directory is writable by UID/GID `1000` (or matches the `user:` in your Compose file), then bring up the container:
 
 ```bash
-docker compose up --build jellyfin-network-tagger
+mkdir -p config
+docker compose up -d
 ```
 
-```yaml
-services:
-  jellyfin-network-tagger:
-    build: .
-    container_name: jellyfin-network-tagger
-    restart: unless-stopped
-    env_file:
-      - ./jellyfin-network-tagger/.env
-    user: "1000:1000"
-    networks:
-      - media-stack_default
-
-networks:
-  media-stack_default:
-    external: true
-```
-
-### Option B — Pull pre‑built image (recommended)
-
-You can run the tagger using the pre‑built GHCR & Docker Hub images, but you **must** create a `.env` file first!
-
-Without the required environment variables, the container cannot connect to Jellyfin or TMDB.
-
-## 🧾 Environment Variables (`.env`)
-
-Your `.env` file should look like:
-
-```env
-JELLYFIN_URL=http://192.168.x.x:8096
-JELLYFIN_API_KEY=your-jellyfin-api-key
-TMDB_API_KEY=eyJ...your-tmdb-read-access-token - Long version API Token
-TMDB_COUNTRY=US
-RUN_INTERVAL_HOURS=24
-DRY_RUN=true
-
-# Leave as is or add your own to the list
-# Pro-tip - When you do your first dry run before going live it will list alot of network names that you will most likely want to add to this list.
-
-IGNORE_PROVIDERS=Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo
-```
-
-> ✔ Use your host’s LAN IP for Jellyfin
-> ✔ Use the long TMDB Read Access Token (`eyJ...`)
-> ✔ Start with `DRY_RUN=true` to preview changes safely
-
-## 📦 GHCR (GitHub) image
-
-Pull the image:
+If building from source (Option C), run:
 
 ```bash
-docker pull ghcr.io/jpwebdude/jellyfin-network-tagger:latest
-```
-
-Use GHCR in Docker Compose
-
-```yaml
-services:
-  jellyfin-network-tagger:
-    image: ghcr.io/jpwebdude/jellyfin-network-tagger:latest
-    container_name: jellyfin-network-tagger
-    restart: unless-stopped
-    env_file:
-      - ./jellyfin-network-tagger/.env
-    user: "1000:1000"
-    networks:
-      - media-stack_default
-
-networks:
-  media-stack_default:
-    external: true
-```
-
-## 📦 DockerHub image
-
-```bash
-docker pull jhosted/jellyfin-network-tagger:latest
-```
-
-Use Docker Hub in Docker Compose
-
-```yaml
-services:
-  jellyfin-network-tagger:
-    image: jhosted/jellyfin-network-tagger:latest
-     container_name: jellyfin-network-tagger
-    restart: unless-stopped
-    env_file:
-      - ./jellyfin-network-tagger/.env
-    user: "1000:1000"
-    networks:
-      - media-stack_default
-
-networks:
-  media-stack_default:
-    external: true
-```
-
-### 🧩 Docker Compose Examples
-
-##### **Scenario 1 — Jellyfin running in** `network_mode: host`  **(MOST COMMON)**
-
-If your Jellyfin container uses:
-
-```yaml
-network_mode: host
-```
-
-then **do NOT** try to place the tagger on the same network — host‑mode containers cannot join Docker networks.
-
-Instead, simply point the tagger to your host’s LAN IP:
-
-```yaml
-services:
-  jellyfin-network-tagger:
-    image: ghcr.io/jpwebdude/jellyfin-network-tagger:latest
-    container_name: jellyfin-network-tagger
-    restart: unless-stopped
-    env_file:
-      - ./jellyfin-network-tagger/.env
-   user: "1000:1000"
-
-    # Jellyfin is running in host mode, so the tagger reaches it via LAN IP:
-    # JELLYFIN_URL=http://192.168.x.x:8096
-
-    networks:
-      - media-stack_default   # Optional: only if your other apps use this network
-
-networks:
-  media-stack_default:
-    external: true
-```
-
-```markdown
-> ⚠️ **If your Jellyfin container uses `network_mode: host`, do NOT try to place the tagger on the same network.**
->
-> Docker containers cannot join a host‑mode network.  
-> Instead, set `JELLYFIN_URL` to your host machine’s LAN IP (e.g., `http://192.168.1.100:8096`).  
-> The tagger will reach Jellyfin normally through the LAN.
+docker compose up -d --build
 ```
 
 ---
 
-#### Scenario 2 — Jellyfin running on a normal Docker network
+### Step 3 — Open the Web Dashboard
 
-If Jellyfin is on a bridge network (e.g., `media-stack_default`), then place the tagger on the same network:
+Open your browser and go to:
 
-```yaml
-services:
-  jellyfin-network-tagger:
-    image: ghcr.io/jpwebdude/jellyfin-network-tagger:latest
-    container_name: jellyfin-network-tagger
-    restart: unless-stopped
-    env_file:
-      - ./jellyfin-network-tagger/.env
-   user: "1000:1000"
-    networks:
-      - media-stack_default
-
-networks:
-  media-stack_default:
-    external: true
+```text
+http://<your-server-ip>:3000
 ```
 
-**Find your Docker network name:**
-
-```bash
-docker network ls
-# Look for a name ending in _default — usually yourfoldername_default
-```
-
-## First Run (Dry Run)
-
-```bash
-docker compose up jellyfin-network-tagger
-```
-
-#### **Watch the logs:**
-
-```bash
-docker logs -f jellyfin-network-tagger
-```
-
-You should see:
-
-+ number of movies scanned
-
-+ TMDB lookups
-
-+ provider normalization
-
-+ run summary
-
-No tags will be written while `DRY_RUN=true`.
-
-## 🚀 Go Live
-
-Edit `.env`:
-
-```yaml
-DRY_RUN=false
-```
-
-Then restart:
-
-```bash
-docker compose restart jellyfin-network-tagger
-```
+You will see the dashboard with the left sidebar navigation:
+- **Jellyfin Network Tagger** (`/`)
+- **Local Library Tagger** (`/local-tagger`)
+- **Settings** (`/settings`)
+- **Buy Me a Coffee** (support link at the bottom of the sidebar)
 
 ---
 
-## ⚙️ Configuration
+### Step 4 — Enter Your Settings on First Boot
 
-All configuration is done through environment variables in your `.env` file.
+Click **Settings** in the sidebar to configure your credentials. Everything you save here is stored in `/app/data/config.json` (your mounted `./config` folder) and automatically reloads on future container restarts.
 
-| Variable             | Default      | Description                                                                                                                             |
-| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `JELLYFIN_URL`       | *(required)* | Full URL to your Jellyfin server. Use your host's LAN IP from inside Docker — **not** `localhost`. Example: `http://192.168.1.100:8096` |
-| `JELLYFIN_API_KEY`   | *(required)* | Your Jellyfin API key from Dashboard → API Keys                                                                                         |
-| `TMDB_API_KEY`       | *(required)* | TMDB Read Access Token (the long `eyJ...` one — not the short key)                                                                      |
-| `TMDB_COUNTRY`       | `US`         | Two-letter country code for provider lookup                                                                                             |
-| `RUN_INTERVAL_HOURS` | `24`         | How often to re-scan the library (hours)                                                                                                |
-| `DRY_RUN`            | `false`      | Set to `true` to preview without writing any tags                                                                                       |
-| `IGNORE_PROVIDERS`   | *(empty)*    | Comma-separated list of provider names to skip entirely                                                                                 |
+#### 1. TMDB API Credentials
+1. **TMDB Read Access Token (`eyJ...`) or v3 API Key**: Paste either your long TMDB Read Access Token or your shorter v3 API Key.
+2. **TMDB Country Code**: Enter your two-letter region code (default: `US`, e.g., `CA`, `GB`, `AU`, `DE`).
+3. Click **Test TMDB Connection** — confirm it reports a successful TMDB connection and shows whether Bearer Token or v3 API Key auth was detected.
 
-Edit `.env` with your Jellyfin + TMDB credentials:
+#### 2. Jellyfin Server Connection
+1. **Jellyfin URL**: Enter the full URL to your Jellyfin server (e.g., `http://192.168.1.100:8096` or `http://jellyfin:8096`). Avoid `localhost` inside Docker.
+2. **Jellyfin API Key**: Paste the API key generated in Jellyfin under **Dashboard → API Keys**.
+3. **Schedule Interval (Hours)**: Set how often automatic background scans run (default: `24`).
+4. **Ignore Providers (comma-separated)**: Optional list of streaming providers you do not want added as tags (for example: `Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo`).
+5. **Dry Run by default for Jellyfin Network Tagger**: Recommended **checked** for your first scan so you can preview tags safely before writing them.
+6. Click **Test Jellyfin Connection** — confirm it connects and displays your Jellyfin Server name and version (e.g., `12.4.x`).
 
-```env
-JELLYFIN_URL=http://192.168.x.x:8096
-JELLYFIN_API_KEY=your-jellyfin-api-key-here
-TMDB_API_KEY=eyJ...your-tmdb-read-access-token-here
-TMDB_COUNTRY=US
-RUN_INTERVAL_HOURS=24
-DRY_RUN=true
-IGNORE_PROVIDERS=Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo
-```
+#### 3. Save Settings
+Click **Save Settings** at the bottom of the page.
 
 ---
 
-## Provider Name Normalization
+### Step 5 — Run the Jellyfin Network Tagger
 
-TMDB returns verbose provider names like `Netflix Standard with Ads` or `Paramount+ Roku Premium Channel`. The tagger collapses all variants into clean, consistent display names:
-
-| Raw TMDB Name                         | Normalised Tag |
-| ------------------------------------- | -------------- |
-| Netflix basic/Standard with Ads       | `Netflix`      |
-| Amazon Prime Video / with Ads         | `Prime Video`  |
-| Apple TV / Apple TV Plus              | `Apple TV+`    |
-| HBO Max / Max Amazon Channel          | `Max`          |
-| Disney Plus / Disney+ Amazon Channel  | `Disney+`      |
-| Peacock Premium / Premium Plus        | `Peacock`      |
-| Paramount Plus / Paramount+ Essential | `Paramount+`   |
-| Discovery Plus                        | `Discovery+`   |
-| Showtime Amazon/Apple/Roku Channel    | `Showtime`     |
-| STARZ / Starz Amazon Channel          | `Starz`        |
-| MGM Plus / MGM+ Amazon Channel        | `MGM+`         |
-| AMC+ Amazon/Apple/Roku Channel        | `AMC+`         |
-
-> **If you see unmapped provider names appearing as tags, add them to the `PROVIDER_NAME_MAP` dictionary in `tagger.py`, rebuild the container, and restart.**
+1. Click **Jellyfin Network Tagger** in the sidebar.
+2. Click **Run Dry Scan** to perform a safe preview run.
+3. Watch the **Run Summary & Controls** counters and **Service Logs** right in the browser:
+   - `Tagged` — Items that received (or would receive in Dry Run) new streaming provider tags
+   - `Unchanged` — Items that already have matching tags
+   - `No IMDB ID` — Items in Jellyfin missing IMDB/TMDB IDs
+   - `No TMDB` — Items not found on TMDB
+   - `No Providers` — Matched on TMDB, but no streaming providers available in your selected country
+   - `Errors` — Any items that encountered an error
+4. Once the Dry Run output looks good, click **Run Live Tagging** to write the tags to Jellyfin. (To enable automatic scheduled live runs, uncheck **Dry Run by default** in **Settings** and click **Save Settings**.)
 
 ---
 
-## Daily Operations
+### Step 6 — Use the Local Library Tagger (Optional)
 
-**Watch live logs**
+If your local Movie or TV Show files need Jellyfin-standard `[tmdbid-12345]` tags in their folder and file names:
 
-```bash
-docker logs -f jellyfin-network-tagger
-```
+1. Click **Local Library Tagger** in the sidebar.
+2. Choose how to access your folders:
+   - **Server / Mounted Paths**: Enter your container-mounted paths (e.g., `/media/movies` and `/media/tv`) or click **Browse** to navigate directories inside the container.
+   - **Browser Folder Picker**: Click **Select Movies Folder** / **Select TV Shows Folder** to pick folders directly from your computer in Chromium browsers.
+3. Keep **Dry Run enabled** checked and click **Scan Library (Dry Run)**.
+4. Review the **Rename Preview & Verification** table:
+   - **Movies** get `[tmdbid-12345]` placed before the file extension (e.g., `Inception (2010) [tmdbid-27205].mkv`).
+   - **TV Shows** get `[tmdbid-12345]` added to both the TV show folder and each episode video file before `.mp4`/`.mkv`.
+   - Click **Fix Match** on any item in the **Needs Review** tab to search TMDB manually and pick the exact movie or show.
+5. When everything looks clean and there are no unwanted matches:
+   - Uncheck **Dry Run enabled**, click **Scan Library** / **Apply Renames to Disk** to rename directly, **or**
+   - Click **Download `.sh` Script** or **Download `.ps1` Script** to run the renames manually on your host machine.
 
-**Trigger an immediate re-scan**
+---
 
-```bash
-docker compose restart jellyfin-network-tagger
-```
+## 🏷️ Provider Name Normalization
 
-**Run in background (detached)**
+TMDB often returns verbose or channel-specific provider names (like `Netflix Standard with Ads` or `Paramount+ Roku Premium Channel`). The tagger normalizes variants into clean, consistent Jellyfin tags:
 
-```bash
-docker compose up -d jellyfin-network-tagger
-```
+| Raw TMDB Name | Normalized Tag |
+| --- | --- |
+| Netflix basic / Standard with Ads | `Netflix` |
+| Amazon Prime Video / with Ads | `Prime Video` |
+| Apple TV / Apple TV Plus | `Apple TV+` |
+| HBO Max / Max Amazon Channel | `Max` |
+| Disney Plus / Disney+ Amazon Channel | `Disney+` |
+| Peacock Premium / Premium Plus | `Peacock` |
+| Paramount Plus / Paramount+ Essential | `Paramount+` |
+| Discovery Plus | `Discovery+` |
+| Showtime Amazon / Apple / Roku Channel | `Showtime` |
+| STARZ / Starz Amazon Channel | `Starz` |
+| MGM Plus / MGM+ Amazon Channel | `MGM+` |
+| AMC+ Amazon / Apple / Roku Channel | `AMC+` |
 
-**Stop the tagger**
+You can test any raw provider name using the **Provider Name Normalization** tester at the bottom of the **Jellyfin Network Tagger** page.
 
-```bash
-docker compose down jellyfin-network-tagger
-```
+---
 
-**Change the run interval**
+## ⚙️ Optional Environment Pre-Seeding
 
-```bash
-# Edit .env
-RUN_INTERVAL_HOURS=24
+While all configuration is managed in the Web Dashboard and persisted in `/app/data/config.json`, you can optionally pre-seed initial defaults on first boot via `.env` (see `.env.example`):
 
-# Then restart
-docker compose restart jellyfin-network-tagger
-```
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PORT` | `3000` | Web dashboard HTTP port |
+| `CONFIG_FILE` | `/app/data/config.json` | Path to persisted JSON configuration file |
+| `JELLYFIN_URL` | *(empty)* | Initial Jellyfin server URL |
+| `JELLYFIN_API_KEY` | *(empty)* | Initial Jellyfin API key |
+| `TMDB_API_KEY` | *(empty)* | Initial TMDB Read Access Token (`eyJ...`) or v3 API Key |
+| `TMDB_COUNTRY` | `US` | Two-letter country code for streaming provider lookups |
+| `RUN_INTERVAL_HOURS` | `24` | Scheduled background scan interval in hours |
+| `DRY_RUN` | `true` | Default Dry Run state |
+| `IGNORE_PROVIDERS` | *(empty)* | Comma-separated provider names to skip |
 
-## 📊 Example Run Summary
-
-At the end of each run, the tagger prints a one-line summary:
-
-```
-Run complete: 42 tagged | 310 unchanged | 12 no-id | 3 no-tmdb | 8 no-providers | 0 errors
-```
-
-| Stat           | Meaning                                                   |
-| -------------- | --------------------------------------------------------- |
-| `tagged`       | Items that had new provider tags written successfully     |
-| `unchanged`    | Items already tagged correctly — skipped                  |
-| `no-id`        | Items with no IMDB ID in Jellyfin metadata — skipped      |
-| `no-tmdb`      | IMDB ID not found in TMDB database — skipped              |
-| `no-providers` | Found on TMDB but no streaming data for your country      |
-| `errors`       | Failed to write back to Jellyfin — check logs for details |
+> Once you click **Save Settings** in the dashboard, values stored in `/app/data/config.json` take precedence across container restarts.
 
 ---
 
 ## 🛠 Troubleshooting
 
-+ **Jellyfin unreachable** → Jellyfin is in `network_mode: host`, use LAN IP
-
-+ **TMDB lookups failing** → using short API key instead of long token
-
-+ **No tags written** → DRY_RUN=true
-
-+ **Network errors** → ensure `networks:` block is at root level
-
-+ **Code changes not applying** → run a clean rebuild:
-
-```bash
-docker compose down jellyfin-network-tagger
-docker rmi jellyfin-network-tagger
-docker compose up -d --build jellyfin-network-tagger
-```
-
-+ **`invalid compose project` or network error** → The `networks:` block is nested under the service instead of at root level. Move it to zero indentation at the bottom of your `docker-compose.yml`.
-
-+ **Provider names appearing unclean** → Add the raw name to `PROVIDER_NAME_MAP` in `tagger.py` mapping it to your preferred clean name, then rebuild.
+- **Dashboard doesn't load on port 3000** → Make sure `ports: ["3000:3000"]` is set in `docker-compose.yml` and check container status with `docker compose ps`.
+- **Jellyfin unreachable** → Use your host machine's LAN IP (e.g., `http://192.168.1.100:8096`) instead of `localhost`, especially if Jellyfin uses `network_mode: host`. Verify with **Test Jellyfin Connection** in Settings.
+- **TMDB connection fails** → Verify you pasted either a valid TMDB Read Access Token (`eyJ...`) or v3 API Key without extra spaces, and click **Test TMDB Connection** in Settings.
+- **Settings reset after container restart** → Ensure `./config:/app/data` is mounted in `docker-compose.yml` and writable by UID/GID `1000` (`user: "1000:1000"`).
+- **Local Library Tagger cannot see media folders** → Under **Server / Mounted Paths**, add volume mounts (e.g., `/mnt/media/movies:/media/movies`) to `docker-compose.yml` and recreate the container, or use **Browser Folder Picker**.
+- **Jellyfin items skipped (`No IMDB ID`)** → Refresh metadata in Jellyfin so items include IMDB or TMDB ProviderIds, or use the **Local Library Tagger** to embed `[tmdbid-ID]` in filenames and folders first.
 
 ---
 
-## 🏗️ Multi‑Architecture Support
+## 🏗️ Multi-Architecture Support
 
-This project provides **full multi‑architecture Docker images**, allowing the container to run on a wide range of systems including x86 servers, ARM SBCs, NAS devices, and cloud environments.
+Published Docker images on GHCR and Docker Hub support:
 
-The published Docker images include the following architectures:
-
-+ **amd64** — Standard 64‑bit PCs, servers, VPS hosts
-
-+ **arm64** — Raspberry Pi 4/5, ARM servers, modern SBCs
-
-+ **armv7** — Raspberry Pi 2/3, older ARM boards
-
-All images are built using Docker Buildx with QEMU emulation to ensure consistent builds across platforms.
-
-## Recommended Jellyfin Plugins
-
-The tagger works great alongside these Jellyfin plugins:
-
-- [KeksBombe's - Auto Collections](https://github.com/KeksBombe/jellyfin-plugin-auto-collections) — automatically builds per-network collections from the tags this tool writes.
-- [KefinTweaks](https://github.com/ranaldsgift/KefinTweaks) — surfaces those collections as rows on your Jellyfin homepage.
-+ [Jellyfin SmartLists](https://github.com/jyourstone/jellyfin-smartlists-plugin)  — automatically builds per-network collections from the tags this tool writes.
+- **amd64** — Standard 64-bit PCs, servers, NAS devices, VPS hosts
+- **arm64** — Raspberry Pi 4/5, ARM servers, modern SBCs
+- **armv7** — Raspberry Pi 2/3 and older 32-bit ARM boards
 
 ---
 
-## ❤️ Acknowledgements
+## 🔌 Recommended Jellyfin Plugins
 
-This tool was built by a member of the Jellyfin community for the Jellyfin community.
-
-Streaming provider data is sourced from [The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
+- [KeksBombe's Auto Collections](https://github.com/KeksBombe/jellyfin-plugin-auto-collections) — Automatically builds per-network collections from the tags this tool writes.
+- [KefinTweaks](https://github.com/ranaldsgift/KefinTweaks) — Surfaces those collections as rows on your Jellyfin homepage.
+- [Jellyfin SmartLists](https://github.com/jyourstone/jellyfin-smartlists-plugin) — Dynamically builds collections and playlists from tags.
 
 ---
 
-## 🤝 Contributing
+## ❤️ Acknowledgements & Support
 
-We welcome contributions, bug fixes, and feature requests! Because this plugin is built for the Jellyfin ecosystem, all contributions must adhere to open-source compliance.
+This project was built for the self-hosting and Jellyfin community. If you find it useful, consider supporting development:
 
-## ⚖️ License & Anti-Commercial Policy
+<p>
+  <a href="https://buymeacoffee.com/jpwebdude">
+    <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20jpwebdude-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee" />
+  </a>
+</p>
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. 
+Streaming provider and media lookup data is sourced from [The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 
-See the [LICENSE](LICENSE) file for the full legal text.
+---
+
+## ⚖️ License
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for details.
 
 <p align="center">
-  <img src="docs/images/network-tagger-logo.png" alt="Jellyfin Network Tagger Logo" width="40%" />
-
+  <img src="docs/images/network-tagger-logo.png" alt="Jellyfin Network Tagger Logo" width="32%" />
 </p>
 
 <div align="center">

@@ -1,12 +1,18 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.env
-venv/
+# Node.js
+node_modules/
+npm-debug.log*
+bun.lock
 
-# Docker
+# Persistent runtime config & env
+data/
+.env
+*.env
+
+# Build artifacts
+dist/
+build/
+
+# Logs & PIDs
 *.log
 *.pid
 
@@ -17,7 +23,3 @@ Thumbs.db
 # Editor folders
 .vscode/
 .idea/
-
-# Build artifacts
-dist/
-build/

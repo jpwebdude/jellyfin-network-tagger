@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jellyfin Network Tagger</title>
+  <meta name="description" content="Scans your Jellyfin library and local media folders, looks up streaming providers and TMDB IDs, and tags metadata and filenames cleanly." />
+  <meta property="og:title" content="Jellyfin Network Tagger" />
+  <meta property="og:description" content="Scans your Jellyfin library and local media folders, looks up streaming providers and TMDB IDs, and tags metadata and filenames cleanly." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-inset: #0b1120;
+      --border: #334155;
+      --border-subtle: rgba(148, 163, 184, 0.14);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --ok: #16a34a;
+      --ok-text: #4ade80;
+      --warn: #d97706;
+      --warn-text: #fbbf24;
+      --err: #dc2626;
+      --err-text: #f87171;
+      --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      --font-body: "Public Sans", system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sidebar-w: 260px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.55;
+      letter-spacing: 0.005em;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: var(--font-display);
+      letter-spacing: -0.015em;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--surface-inset);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 30;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-logo-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-wordmark {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+                  color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(30, 41, 59, 0.6);
+    }
+
+    .nav-link.active {
+      color: var(--text);
+      background: var(--surface);
+      border-color: var(--border);
+    }
+
+    .nav-link svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .coffee-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.45);
+      color: var(--text);
+      text-decoration: none;
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: border-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+                  background-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .coffee-link:hover {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+
+    .coffee-link svg {
+      width: 18px;
+      height: 18px;
+      color: var(--warn-text);
+      flex-shrink: 0;
+    }
+
+    .sidebar-backdrop {
+      display: none;
+    }
+
+    /* Main Column */
+    .main-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Bar Contract */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .breadcrumb {
+      font-family: var(--font-display);
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .breadcrumb strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .topbar-action {
+      flex-shrink: 0;
+    }
+
+    /* Content */
+    .viewport {
+      padding: 24px 28px 48px;
+      max-width: 1240px;
+      width: 100%;
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 20px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 4px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-wrap: balance;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .surface {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .surface-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .surface-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .meta-inline {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .state-ok { color: var(--ok-text); font-weight: 600; }
+    .state-warn { color: var(--warn-text); font-weight: 600; }
+    .state-err { color: var(--err-text); font-weight: 600; }
+
+    /* KPI Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 14px;
+    }
+
+    .kpi-cell {
+      padding: 4px 8px;
+    }
+
+    .kpi-val {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .kpi-lbl {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Controls & Forms */
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-inset);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      resize: vertical;
+      min-height: 76px;
+    }
+
+    input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .field-row > .grow {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 4px 0 16px;
+      font-size: 0.9rem;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button, .btn-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-inset);
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    button:hover:not(:disabled), .btn-link:hover {
+      border-color: var(--muted);
+      background: #162033;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #082f49;
+      border-color: var(--accent);
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    button.danger {
+      background: rgba(220, 38, 38, 0.14);
+      border-color: var(--err);
+      color: var(--err-text);
+    }
+
+    button.danger:hover:not(:disabled) {
+      background: rgba(220, 38, 38, 0.25);
+    }
+
+    button.sm {
+      min-height: 32px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Segmented Tabs */
+    .segmented {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface-inset);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      flex-wrap: wrap;
+    }
+
+    .seg-btn {
+      min-height: 34px;
+      padding: 6px 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.82rem;
+      border-radius: 6px;
+    }
+
+    .seg-btn:hover:not(:disabled) {
+      color: var(--text);
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    /* Notices & Messages */
+    .notice {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-inset);
+      font-size: 0.88rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .notice.warn {
+      border-color: rgba(217, 119, 6, 0.55);
+      color: var(--warn-text);
+    }
+
+    .notice.err {
+      border-color: rgba(220, 38, 38, 0.55);
+      color: var(--err-text);
+    }
+
+    .notice.ok {
+      border-color: rgba(22, 163, 74, 0.55);
+      color: var(--ok-text);
+    }
+
+    .status-line {
+      margin-top: 10px;
+      font-size: 0.86rem;
+      color: var(--accent);
+      min-height: 1.3em;
+    }
+
+    /* Logs & Tables */
+    .logs {
+      background: var(--surface-inset);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      max-height: 320px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: auto;
+      background: var(--surface-inset);
+      max-height: 480px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.78rem;
+      border-bottom: 1px solid var(--border);
+      z-index: 2;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background: rgba(30, 41, 59, 0.55);
+    }
+
+    .file-cell {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      word-break: break-all;
+      min-width: 200px;
+    }
+
+    .subpath {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state p {
+      margin: 0 0 14px;
+      max-width: 52ch;
+      margin-inline: auto;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.76);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 640px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-inset);
+      max-height: 360px;
+    }
+
+    .list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .list-row:last-child {
+      border-bottom: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 960px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-backdrop.open {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.7);
+        z-index: 25;
+      }
+      .menu-toggle {
+        display: inline-flex;
+      }
+      .topbar {
+        padding: 12px 16px;
+        gap: 12px;
+      }
+      .viewport {
+        padding: 18px 16px 40px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <aside id="sidebar" class="sidebar" aria-label="Primary Navigation">
+      <a href="/" class="sidebar-brand" data-route="/">
+        <span class="brand-logo-wrap">
+          <img src="/docs/images/network-tagger-logo.png" alt="Jellyfin Network Tagger Logo" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+          <svg style="display:none; width:20px; height:20px; color:var(--accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <path d="M10 9l5 3-5 3V9z"></path>
+          </svg>
+        </span>
+        <span class="brand-wordmark">Jellyfin Tagger</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <button type="button" class="nav-link active" data-route="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h10"></path>
+          </svg>
+          <span>Jellyfin Network Tagger</span>
+        </button>
+
+        <button type="button" class="nav-link" data-route="/local-tagger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"></path>
+          </svg>
+          <span>Local Library Tagger</span>
+        </button>
+
+        <button type="button" class="nav-link" data-route="/settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="https://buymeacoffee.com/jpwebdude" target="_blank" rel="noopener noreferrer" class="coffee-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+          </svg>
+          <span>Buy Me a Coffee</span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="main-col">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menu-toggle" type="button" class="menu-toggle" aria-label="Open navigation menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div id="topbar-breadcrumb" class="breadcrumb">Dashboard / <strong>Jellyfin Network Tagger</strong></div>
+        </div>
+        <div class="topbar-action">
+          <button id="topbar-primary-btn" type="button" class="primary">Run Dry Scan</button>
+        </div>
+      </header>
+
+      <main class="viewport">
+        <!-- View 1: Jellyfin Network Tagger -->
+        <section id="view-network" class="view-section active">
+          <div class="page-header">
+            <h1>Jellyfin Network Tagger</h1>
+            <p>Scans Movies and TV Series in Jellyfin, looks up TMDB streaming providers, and writes normalized provider tags back to Jellyfin metadata.</p>
+          </div>
+
+          <div id="network-config-notice" class="notice warn hidden">
+            <span id="network-config-notice-text"></span>
+            <button type="button" class="sm" data-route="/settings">Open Settings</button>
+          </div>
+
+          <section class="surface">
+            <div class="surface-head">
+              <h2>Run Summary &amp; Controls</h2>
+              <div class="meta-inline">
+                <span id="config-status-text" class="state-warn">Checking...</span>
+                <span aria-hidden="true">·</span>
+                <span id="run-status-text">Idle</span>
+                <span aria-hidden="true">·</span>
+                <span id="run-meta">No runs yet</span>
+              </div>
+            </div>
+
+            <div class="kpi-grid">
+              <div class="kpi-cell"><div id="stat-updated" class="kpi-val">0</div><div class="kpi-lbl">Tagged</div></div>
+              <div class="kpi-cell"><div id="stat-unchanged" class="kpi-val">0</div><div class="kpi-lbl">Unchanged</div></div>
+              <div class="kpi-cell"><div id="stat-no-id" class="kpi-val">0</div><div class="kpi-lbl">No IMDB ID</div></div>
+              <div class="kpi-cell"><div id="stat-no-tmdb" class="kpi-val">0</div><div class="kpi-lbl">No TMDB</div></div>
+              <div class="kpi-cell"><div id="stat-no-providers" class="kpi-val">0</div><div class="kpi-lbl">No Providers</div></div>
+              <div class="kpi-cell"><div id="stat-errors" class="kpi-val">0</div><div class="kpi-lbl">Errors</div></div>
+            </div>
+
+            <div class="actions">
+              <button id="btn-dry-run" type="button" class="primary">Run Dry Scan</button>
+              <button id="btn-live-run" type="button">Run Live Tagging</button>
+              <button id="btn-refresh" type="button">Refresh Status</button>
+            </div>
+            <div id="run-msg" class="status-line"></div>
+          </section>
+
+          <section class="surface">
+            <div class="surface-head">
+              <h2>Service Logs</h2>
+            </div>
+            <div id="logs" class="logs">Loading logs...</div>
+          </section>
+
+          <section class="surface">
+            <div class="surface-head">
+              <h2>Provider Name Normalization</h2>
+            </div>
+            <div class="field-row" style="margin-bottom: 10px;">
+              <div class="grow">
+                <label for="test-provider-input">Test Raw TMDB Provider Name</label>
+                <input id="test-provider-input" type="text" placeholder="e.g. Netflix Standard with Ads" style="margin-bottom: 0;" />
+              </div>
+              <button id="btn-test-provider" type="button">Normalise</button>
+            </div>
+            <div id="test-provider-result" class="status-line" style="margin-bottom: 12px;"></div>
+            <div class="table-wrap" style="max-height: 280px;">
+              <table>
+                <thead>
+                  <tr><th>Raw TMDB Name</th><th>Normalised Tag</th></tr>
+                </thead>
+                <tbody id="provider-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- View 2: Local Library Tagger -->
+        <section id="view-local" class="view-section">
+          <div class="page-header">
+            <h1>Local Library Tagger</h1>
+            <p>Scans local Movie and TV Show folders, matches titles on TMDB, and appends <span class="mono">[tmdbid-ID]</span> to TV show folders and before <span class="mono">.mp4</span> / <span class="mono">.mkv</span> video extensions.</p>
+          </div>
+
+          <div id="local-tmdb-notice" class="notice warn hidden">
+            <span id="local-tmdb-notice-text">TMDB API Key or Read Access Token is required to match titles.</span>
+            <button type="button" class="sm" data-route="/settings">Add TMDB Key in Settings</button>
+          </div>
+
+          <div id="local-iframe-notice" class="notice warn hidden">
+            <span id="local-iframe-notice-text"></span>
+            <a id="open-standalone-link" href="/local-tagger" target="_blank" rel="noopener noreferrer" class="btn-link sm">Open in New Tab</a>
+          </div>
+
+          <section class="surface">
+            <div class="surface-head">
+              <h2>1. Folder Source &amp; Safety Mode</h2>
+              <div class="segmented" role="tablist" aria-label="Library access mode">
+                <button id="mode-server-btn" type="button" class="seg-btn active">Server / Mounted Paths</button>
+                <button id="mode-browser-btn" type="button" class="seg-btn">Browser Folder Picker</button>
+              </div>
+            </div>
+
+            <!-- Server Paths Inputs -->
+            <div id="local-server-panel">
+              <div class="grid-2">
+                <div>
+                  <label for="movie-paths-input">Movie Library Paths (one per line)</label>
+                  <div class="field-row" style="align-items: flex-start; margin-bottom: 10px;">
+                    <div class="grow">
+                      <textarea id="movie-paths-input" placeholder="/media/movies" style="margin-bottom: 0;"></textarea>
+                    </div>
+                    <button id="btn-browse-movie" type="button">Browse</button>
+                  </div>
+                </div>
+                <div>
+                  <label for="tv-paths-input">TV Show Library Paths (one per line)</label>
+                  <div class="field-row" style="align-items: flex-start; margin-bottom: 10px;">
+                    <div class="grow">
+                      <textarea id="tv-paths-input" placeholder="/media/tv" style="margin-bottom: 0;"></textarea>
+                    </div>
+                    <button id="btn-browse-tv" type="button">Browse</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Browser Folder Picker Inputs -->
+            <div id="local-browser-panel" class="hidden">
+              <div class="grid-2">
+                <div>
+                  <label>Local Movies Folder</label>
+                  <div class="actions">
+                    <button id="btn-pick-movies" type="button">Select Movies Folder</button>
+                    <span id="picked-movies-label" class="meta-inline">No folder selected</span>
+                  </div>
+                </div>
+                <div>
+                  <label>Local TV Shows Folder</label>
+                  <div class="actions">
+                    <button id="btn-pick-tv" type="button">Select TV Shows Folder</button>
+                    <span id="picked-tv-label" class="meta-inline">No folder selected</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="checkbox-row">
+              <input id="local-dry-run" type="checkbox" checked />
+              <label for="local-dry-run">Dry Run enabled (preview <span class="mono">[tmdbid-ID]</span> matches first before renaming any files or folders)</label>
+            </div>
+
+            <div class="actions">
+              <button id="btn-local-scan" type="button" class="primary">Scan Library (Dry Run)</button>
+              <button id="btn-local-apply" type="button" class="danger" disabled>Apply Renames to Disk</button>
+              <button id="btn-export-sh" type="button" disabled>Download .sh Script</button>
+              <button id="btn-export-ps1" type="button" disabled>Download .ps1 Script</button>
+            </div>
+            <div id="local-msg" class="status-line"></div>
+          </section>
+
+          <section class="surface">
+            <div class="surface-head">
+              <h2>2. Rename Preview &amp; Verification</h2>
+              <div class="meta-inline">
+                <span id="local-scan-meta">No scan run yet</span>
+              </div>
+            </div>
+
+            <div class="kpi-grid">
+              <div class="kpi-cell"><div id="lstat-total" class="kpi-val">0</div><div class="kpi-lbl">Total</div></div>
+              <div class="kpi-cell"><div id="lstat-ready" class="kpi-val">0</div><div class="kpi-lbl">Ready to Tag</div></div>
+              <div class="kpi-cell"><div id="lstat-tagged" class="kpi-val">0</div><div class="kpi-lbl">Already Tagged</div></div>
+              <div class="kpi-cell"><div id="lstat-unmatched" class="kpi-val">0</div><div class="kpi-lbl">Needs Review</div></div>
+              <div class="kpi-cell"><div id="lstat-renamed" class="kpi-val">0</div><div class="kpi-lbl">Renamed</div></div>
+              <div class="kpi-cell"><div id="lstat-errors" class="kpi-val">0</div><div class="kpi-lbl">Errors</div></div>
+            </div>
+
+            <div class="surface-head" style="margin-bottom: 12px;">
+              <div class="segmented" role="tablist" aria-label="Filter scan results">
+                <button type="button" class="seg-btn active" data-local-filter="all">All</button>
+                <button type="button" class="seg-btn" data-local-filter="ready">Ready</button>
+                <button type="button" class="seg-btn" data-local-filter="unmatched">Needs Review</button>
+                <button type="button" class="seg-btn" data-local-filter="already_tagged">Already Tagged</button>
+                <button type="button" class="seg-btn" data-local-filter="error">Errors</button>
+              </div>
+              <div style="min-width: 240px; flex: 0 1 320px;">
+                <input id="local-search-input" type="text" placeholder="Filter by filename or title..." style="margin-bottom: 0;" />
+              </div>
+            </div>
+
+            <div id="local-table-container" class="table-wrap">
+              <div id="local-empty" class="empty-state">
+                <p>Select your Movie or TV Show folders above and run a Dry Run scan to preview <span class="mono">[tmdbid-12345]</span> tags before any files are renamed.</p>
+                <button id="btn-empty-scan" type="button" class="primary">Scan Library (Dry Run)</button>
+              </div>
+              <table id="local-table" class="hidden">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Original Name</th>
+                    <th>Proposed Name</th>
+                    <th>TMDB Match</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="local-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- View 3: Settings -->
+        <section id="view-settings" class="view-section">
+          <div class="page-header">
+            <h1>Settings</h1>
+            <p>Configure your TMDB Read Access Token or v3 API Key (used by both taggers) and your Jellyfin server connection.</p>
+          </div>
+
+          <form id="config-form">
+            <div class="grid-2">
+              <section class="surface">
+                <div class="surface-head">
+                  <h2>TMDB API Credentials</h2>
+                  <span id="tmdb-auth-status" class="meta-inline">Checking...</span>
+                </div>
+
+                <label for="tmdbApiKey">TMDB Read Access Token (<span class="mono">eyJ...</span>) or v3 API Key</label>
+                <input id="tmdbApiKey" type="password" placeholder="e.g. eyJ...your-tmdb-read-access-token or 32-char API key" />
+
+                <div class="field-row">
+                  <div class="grow">
+                    <label for="tmdbCountry">TMDB Country Code</label>
+                    <input id="tmdbCountry" type="text" maxlength="4" placeholder="US" />
+                  </div>
+                  <div style="margin-bottom: 14px;">
+                    <button id="btn-test-tmdb" type="button">Test TMDB Connection</button>
+                  </div>
+                </div>
+                <div id="tmdb-test-msg" class="status-line"></div>
+              </section>
+
+              <section class="surface">
+                <div class="surface-head">
+                  <h2>Jellyfin Server Connection</h2>
+                  <span id="jf-config-status" class="meta-inline">Checking...</span>
+                </div>
+
+                <label for="jellyfinUrl">Jellyfin URL</label>
+                <input id="jellyfinUrl" type="text" placeholder="http://192.168.1.100:8096" />
+
+                <label for="jellyfinApiKey">Jellyfin API Key</label>
+                <input id="jellyfinApiKey" type="password" placeholder="e.g. your-jellyfin-api-key (Dashboard -> API Keys)" />
+
+                <div class="field-row">
+                  <div class="grow">
+                    <label for="runIntervalHours">Schedule Interval (Hours)</label>
+                    <input id="runIntervalHours" type="number" min="1" value="24" />
+                  </div>
+                  <div style="margin-bottom: 14px;">
+                    <button id="btn-test-jf" type="button">Test Jellyfin Connection</button>
+                  </div>
+                </div>
+
+                <label for="ignoreProviders">Ignore Providers (comma-separated)</label>
+                <input id="ignoreProviders" type="text" placeholder="Tubi TV,Pluto TV,Crackle,The Roku Channel,Kanopy,fuboTV,Philo" />
+
+                <div class="checkbox-row">
+                  <input id="dryRun" type="checkbox" />
+                  <label for="dryRun">Dry Run by default for Jellyfin Network Tagger</label>
+                </div>
+                <div id="jf-test-msg" class="status-line"></div>
+              </section>
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primary">Save Settings</button>
+            </div>
+            <div id="config-msg" class="status-line"></div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Server Directory Browser Modal -->
+  <div id="browse-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="browse-modal-title">
+    <div class="modal">
+      <div class="surface-head" style="margin-bottom: 6px;">
+        <h2 id="browse-modal-title">Browse Server Directory</h2>
+        <button id="btn-browse-close" type="button" class="sm">Close</button>
+      </div>
+      <div class="field-row" style="margin-bottom: 6px;">
+        <div class="grow">
+          <input id="browse-current-input" type="text" class="mono" style="margin-bottom: 0;" />
+        </div>
+        <button id="btn-browse-go" type="button" class="sm">Go</button>
+        <button id="btn-browse-up" type="button" class="sm">Up</button>
+      </div>
+      <div id="browse-list" class="modal-body"></div>
+      <div class="actions" style="justify-content: flex-end;">
+        <button id="btn-browse-select" type="button" class="primary">Use Current Folder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual TMDB Override Modal -->
+  <div id="override-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="override-modal-title">
+    <div class="modal">
+      <div class="surface-head" style="margin-bottom: 6px;">
+        <h2 id="override-modal-title">Fix TMDB Match</h2>
+        <button id="btn-override-close" type="button" class="sm">Close</button>
+      </div>
+      <div id="override-item-label" class="mono" style="font-size: 0.8rem; color: var(--muted); margin-bottom: 10px;"></div>
+      <div class="field-row">
+        <div class="grow">
+          <label for="override-query">Title</label>
+          <input id="override-query" type="text" style="margin-bottom: 0;" />
+        </div>
+        <div style="width: 100px;">
+          <label for="override-year">Year</label>
+          <input id="override-year" type="text" placeholder="Optional" style="margin-bottom: 0;" />
+        </div>
+        <button id="btn-override-search" type="button" class="primary">Search</button>
+      </div>
+      <div id="override-results" class="modal-body"></div>
+      <div id="override-msg" class="status-line"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

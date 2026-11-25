@@ -1,0 +1,5 @@
+{
+  "name": "Jellyfin Network Tagger",
+  "description": "Scans your Jellyfin library, looks up streaming providers via TMDB, and automatically adds normalized streaming provider tags to Jellyfin metadata.",
+  "requestFramePermissions": []
+}

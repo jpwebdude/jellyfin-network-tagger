@@ -1,8 +1,11 @@
-__pycache__/
-*.pyc
-*.pyo
+node_modules/
+data/
 .env
 .git
 .gitignore
+.aistudio/
 README.md
-docs/
+dist/
+build/
+*.log
+bun.lock
