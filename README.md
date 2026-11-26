@@ -345,6 +345,11 @@ This project was built for the self-hosting and Jellyfin community. If you find 
     <img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20jpwebdude-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee" />
   </a>
 </p>
+<p>
+  <b>Stripe:</b> <a href="https://donate.stripe.com/7sYfZheqk7ptae423vfw400">
+   Donate on Stripe
+  </a>
+</p>
 
 Streaming provider and media lookup data is sourced from [The Movie Database (TMDB)](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 
